@@ -1,0 +1,246 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background-color: #1e1e1e;
+    color: #ffffff;
+    height: 100vh;
+    overflow: hidden;
+}
+
+.container {
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.header {
+    background-color: #2d2d2d;
+    padding: 16px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #404040;
+}
+
+.header h1 {
+    font-size: 24px;
+    font-weight: 600;
+    color: #ffffff;
+}
+
+.problem-nav {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.nav-btn {
+    background-color: #404040;
+    color: #ffffff;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.2s;
+}
+
+.nav-btn:hover {
+    background-color: #505050;
+}
+
+.nav-btn:disabled {
+    background-color: #2d2d2d;
+    color: #666666;
+    cursor: not-allowed;
+}
+
+#problemCounter {
+    font-size: 16px;
+    color: #cccccc;
+    font-weight: 500;
+}
+
+.main-content {
+    flex: 1;
+    display: flex;
+    height: calc(100vh - 73px);
+}
+
+.problem-section {
+    width: 50%;
+    background-color: #252525;
+    padding: 24px;
+    overflow-y: auto;
+    border-right: 1px solid #404040;
+}
+
+.problem-header h2 {
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 24px;
+    color: #ffffff;
+}
+
+.problem-content {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.problem-description h3,
+.problem-constraints h3,
+.problem-example h3 {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #ffffff;
+}
+
+.problem-description p,
+.problem-constraints p {
+    font-size: 14px;
+    line-height: 1.6;
+    color: #cccccc;
+}
+
+.problem-example pre {
+    background-color: #1e1e1e;
+    padding: 16px;
+    border-radius: 4px;
+    font-size: 14px;
+    line-height: 1.5;
+    color: #cccccc;
+    overflow-x: auto;
+    border: 1px solid #404040;
+}
+
+.code-section {
+    width: 50%;
+    background-color: #1e1e1e;
+    display: flex;
+    flex-direction: column;
+}
+
+.code-header {
+    background-color: #2d2d2d;
+    padding: 16px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #404040;
+}
+
+.code-header h3 {
+    font-size: 16px;
+    font-weight: 600;
+    color: #ffffff;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 12px;
+}
+
+.action-btn {
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+.run-btn {
+    background-color: #0066cc;
+    color: #ffffff;
+}
+
+.run-btn:hover {
+    background-color: #0052a3;
+}
+
+.submit-btn {
+    background-color: #28a745;
+    color: #ffffff;
+}
+
+.submit-btn:hover {
+    background-color: #218838;
+}
+
+.code-editor {
+    flex: 1;
+    padding: 16px;
+}
+
+#codeInput {
+    width: 100%;
+    height: 100%;
+    background-color: #1e1e1e;
+    color: #ffffff;
+    border: 1px solid #404040;
+    border-radius: 4px;
+    padding: 16px;
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+    font-size: 14px;
+    line-height: 1.5;
+    resize: none;
+    outline: none;
+}
+
+#codeInput::placeholder {
+    color: #666666;
+}
+
+.result-section {
+    background-color: #2d2d2d;
+    padding: 16px 24px;
+    border-top: 1px solid #404040;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.result-section h3 {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #ffffff;
+}
+
+#resultOutput {
+    background-color: #1e1e1e;
+    padding: 12px;
+    border-radius: 4px;
+    font-size: 13px;
+    line-height: 1.5;
+    color: #cccccc;
+    border: 1px solid #404040;
+    min-height: 60px;
+    overflow-x: auto;
+}
+
+/* 스크롤바 스타일링 */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #2d2d2d;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #555555;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #666666;
+}
