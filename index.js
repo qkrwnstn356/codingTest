@@ -30,8 +30,7 @@ console.log(changeToCase());`,
         title: "2번 문제",
         description: "제시된 url의 데이터를 fetch를 사용하여 userId가 4인 값들의 id와 title만 리스트 형태로 반환해주세요.",
         constraints: `async/await 비동기 처리 방식을 사용해주세요.
-가져올 데이터의 userId의 타입은 Number입니다.
-요청할 API 주소는 'https://jsonplaceholder.typicode.com/posts' 입니다. 해당 url만 사용해주세요.`,
+가져올 데이터의 userId의 타입은 Number입니다. 요청할 API 주소는 'https://jsonplaceholder.typicode.com/posts' 입니다. 해당 url만 사용해주세요.`,
         example: `[
   { id: 31, title: 'ullam ut quidem id aut vel consequuntur' }, 
   { id: 32, title: 'doloremque illum aliquid sunt' },
@@ -126,6 +125,9 @@ console.log(formatingNewList(dataList));`,
 // 현재 문제 상태
 let currentProblem = 0;
 
+// 사용자 작업 내용 저장소
+let userProgress = {};
+
 // DOM 요소들
 const problemTitle = document.getElementById('problemTitle');
 const problemDesc = document.getElementById('problemDesc');
@@ -138,6 +140,49 @@ const prevBtn = document.getElementById('prevBtn');
 const nextBtn = document.getElementById('nextBtn');
 const runBtn = document.getElementById('runBtn');
 const submitBtn = document.getElementById('submitBtn');
+const resetBtn = document.getElementById('resetBtn');
+
+// localStorage에서 사용자 진행상황 불러오기
+function loadUserProgress() {
+    const saved = localStorage.getItem('dkbmc_coding_test_progress');
+    if (saved) {
+        userProgress = JSON.parse(saved);
+    } else {
+        // 초기화
+        userProgress = {};
+        problems.forEach((problem, index) => {
+            userProgress[index] = {
+                code: problem.initialCode,
+                result: "실행 결과가 여기에 표시됩니다.",
+                resultColor: '#cccccc'
+            };
+        });
+    }
+}
+
+// localStorage에 사용자 진행상황 저장
+function saveUserProgress() {
+    localStorage.setItem('dkbmc_coding_test_progress', JSON.stringify(userProgress));
+}
+
+// 진행상황 초기화 (선택사항 - 필요시 사용)
+function resetProgress() {
+    if (confirm('모든 작업 내용이 초기화됩니다. 계속하시겠습니까?')) {
+        localStorage.removeItem('dkbmc_coding_test_progress');
+        loadUserProgress();
+        renderProblem(currentProblem);
+    }
+}
+
+// 현재 작업 내용 저장
+function saveCurrentWork() {
+    userProgress[currentProblem] = {
+        code: codeInput.value,
+        result: resultOutput.textContent,
+        resultColor: resultOutput.style.color || '#cccccc'
+    };
+    saveUserProgress();
+}
 
 // 문제 렌더링
 function renderProblem(index) {
@@ -147,7 +192,17 @@ function renderProblem(index) {
     problemDesc.textContent = problem.description;
     problemConstraints.textContent = problem.constraints;
     problemExample.textContent = problem.example;
-    codeInput.value = problem.initialCode;
+    
+    // 저장된 코드가 있으면 불러오기, 없으면 초기 코드 사용
+    if (userProgress[index]) {
+        codeInput.value = userProgress[index].code;
+        resultOutput.textContent = userProgress[index].result;
+        resultOutput.style.color = userProgress[index].resultColor;
+    } else {
+        codeInput.value = problem.initialCode;
+        resultOutput.textContent = "실행 결과가 여기에 표시됩니다.";
+        resultOutput.style.color = '#cccccc';
+    }
     
     // 문제 카운터 업데이트
     problemCounter.textContent = `${index + 1} / ${problems.length}`;
@@ -155,9 +210,6 @@ function renderProblem(index) {
     // 네비게이션 버튼 상태 업데이트
     prevBtn.disabled = index === 0;
     nextBtn.disabled = index === problems.length - 1;
-    
-    // 결과 초기화
-    resultOutput.textContent = "실행 결과가 여기에 표시됩니다.";
 }
 
 // 코드 실행
@@ -197,6 +249,9 @@ function runCode() {
         resultOutput.textContent = `에러: ${error.message}`;
         resultOutput.style.color = '#ff6b6b';
     }
+    
+    // 실행 결과 저장
+    saveCurrentWork();
 }
 
 // 제출
@@ -277,14 +332,20 @@ function submitCode() {
             }
         }
         
-    } catch (error) {
-        resultOutput.textContent = `❌ 에러: ${error.message}`;
-        resultOutput.style.color = '#ff6b6b';
-    }
-}
+             } catch (error) {
+         resultOutput.textContent = `❌ 에러: ${error.message}`;
+         resultOutput.style.color = '#ff6b6b';
+     }
+     
+     // 제출 결과 저장
+     saveCurrentWork();
+ }
 
 // 이벤트 리스너
 prevBtn.addEventListener('click', () => {
+    // 현재 작업 내용 저장
+    saveCurrentWork();
+    
     if (currentProblem > 0) {
         currentProblem--;
         renderProblem(currentProblem);
@@ -292,6 +353,9 @@ prevBtn.addEventListener('click', () => {
 });
 
 nextBtn.addEventListener('click', () => {
+    // 현재 작업 내용 저장
+    saveCurrentWork();
+    
     if (currentProblem < problems.length - 1) {
         currentProblem++;
         renderProblem(currentProblem);
@@ -300,9 +364,23 @@ nextBtn.addEventListener('click', () => {
 
 runBtn.addEventListener('click', runCode);
 submitBtn.addEventListener('click', submitCode);
+resetBtn.addEventListener('click', resetProgress);
+
+// 코드 입력 시 자동 저장 (실시간 저장)
+codeInput.addEventListener('input', () => {
+    // 디바운싱으로 성능 최적화
+    clearTimeout(codeInput.saveTimeout);
+    codeInput.saveTimeout = setTimeout(saveCurrentWork, 1000);
+});
+
+// 페이지 떠날 때 저장
+window.addEventListener('beforeunload', () => {
+    saveCurrentWork();
+});
 
 // 초기 렌더링
 document.addEventListener('DOMContentLoaded', () => {
+    loadUserProgress();
     renderProblem(currentProblem);
 });
 
