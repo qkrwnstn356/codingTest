@@ -157,6 +157,7 @@ body {
 
 .problem-description h3,
 .problem-constraints h3,
+.problem-data h3,
 .problem-example h3 {
     font-size: 16px;
     font-weight: 600;
@@ -171,6 +172,7 @@ body {
     color: #cccccc;
 }
 
+.problem-data pre,
 .problem-example pre {
     background-color: #1e1e1e;
     padding: 16px;

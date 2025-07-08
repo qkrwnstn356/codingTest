@@ -5,13 +5,12 @@ const problems = [
         title: "1번 문제",
         description: "제시된 문자열의 첫 글자를 대문자로 하고 나머지는 소문자로 변환해주세요.",
         constraints: "제시된 변수의 문자열은 모두 String 타입입니다.",
+        providedData: `const str = 'dKbMc';`,
         example: "'Dkbmc'",
-        initialCode: `function changeToCase() {
-    let answer = 'dKbMc';
-    
+        initialCode: `function changeToCase(str) {
     // 이 곳에 구현해주세요.
     
-    return answer;
+    return str;
 }`,
         solution: function(str) {
             return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
@@ -23,17 +22,16 @@ const problems = [
         description: "제시된 url의 데이터를 fetch를 사용하여 userId가 4인 값들의 id와 title만 리스트 형태로 반환해주세요.",
         constraints: `async/await 비동기 처리 방식을 사용해주세요.
 가져올 데이터의 userId의 타입은 Number입니다. 요청할 API 주소는 'https://jsonplaceholder.typicode.com/posts' 입니다. 해당 url만 사용해주세요.`,
+        providedData: `const url = 'https://jsonplaceholder.typicode.com/posts';`,
         example: `[
   { id: 31, title: 'ullam ut quidem id aut vel consequuntur' }, 
   { id: 32, title: 'doloremque illum aliquid sunt' },
   ...
 ]`,
-        initialCode: `// 제공된 API URL
-const url = 'https://jsonplaceholder.typicode.com/posts';
-
-async function fetchUserIdData(url) {
+        initialCode: `async function fetchUserIdData(url) {
     // 이 곳에 구현해주세요.
     
+    return [];
 }`,
         solution: async function(url) {
             const response = await fetch(url);
@@ -47,26 +45,7 @@ async function fetchUserIdData(url) {
         description: "제시된 dataList는 배열 안의 배열 구조입니다. 각 배열을 새로운 배열 안에 하나의 key value 형태의 오브젝트로 변환해주세요. 배열의 각 field는 key 값이 되고 value는 각 배열의 key에 대한 value가 됩니다.",
         constraints: `제시된 배열의 각 field와 value 이 외에 다른 상태 필드는 없습니다.
 반환 시 각 value에 대한 타입은 유지해주세요.`,
-        example: `[
-    { 
-        "vtOrderNo": "test2", 
-        "vtDeliveryDate": "07-07-2025", 
-        "supplierSoldTo": 3400251, 
-        "supplierShipTo": 4400144, 
-        "supplierPoNo": "PoNumber-111", 
-        "buyerSoldTo": 3400143, 
-        "branch": "Canada", 
-        "buyerShipTo": 4400315, 
-        "buyerPoNo": "Order-Po_nuber1", 
-        "material": "10140NXC", 
-        "qty": -200 
-    },
-    { 
-        ...
-    }
-]`,
-                 initialCode: `// 제공된 데이터
-const dataList = [
+        providedData: `const dataList = [
     [
       { "field": "vtOrderNo", "value": "test2" },
       { "field": "vtDeliveryDate", "value": "07-07-2025" },
@@ -93,11 +72,29 @@ const dataList = [
       { "field": "material", "value": "17733NXK" },
       { "field": "qty", "value": 1 }
     ]
-];
-
-function formatingNewList(dataList) {
+];`,
+        example: `[
+    { 
+        "vtOrderNo": "test2", 
+        "vtDeliveryDate": "07-07-2025", 
+        "supplierSoldTo": 3400251, 
+        "supplierShipTo": 4400144, 
+        "supplierPoNo": "PoNumber-111", 
+        "buyerSoldTo": 3400143, 
+        "branch": "Canada", 
+        "buyerShipTo": 4400315, 
+        "buyerPoNo": "Order-Po_nuber1", 
+        "material": "10140NXC", 
+        "qty": -200 
+    },
+    { 
+        ...
+    }
+]`,
+        initialCode: `function formatingNewList(dataList) {
     // 이 곳에 구현해주세요.
     
+    return [];
 }`,
         solution: function(dataList) {
             return dataList.map(arr => {
@@ -150,6 +147,7 @@ const sampleDataList = [
 const problemTitle = document.getElementById('problemTitle');
 const problemDesc = document.getElementById('problemDesc');
 const problemConstraints = document.getElementById('problemConstraints');
+const problemData = document.getElementById('problemData');
 const problemExample = document.getElementById('problemExample');
 const codeInput = document.getElementById('codeInput');
 const resultOutput = document.getElementById('resultOutput');
@@ -322,6 +320,7 @@ function renderProblem(index) {
     problemTitle.textContent = problem.title;
     problemDesc.textContent = problem.description;
     problemConstraints.textContent = problem.constraints;
+    problemData.textContent = problem.providedData;
     problemExample.textContent = problem.example;
     
     // 저장된 코드가 있으면 불러오기, 없으면 초기 코드 사용
@@ -360,7 +359,7 @@ function runCode() {
         if (problem.id === 1) {
             functionName = 'changeToCase';
             if (typeof changeToCase === 'function') {
-                result = changeToCase();
+                result = changeToCase('dKbMc');
             } else {
                 throw new Error(`${functionName} 함수가 정의되지 않았습니다.`);
             }
@@ -428,6 +427,16 @@ function submitCode() {
     const code = codeInput.value;
     const problem = problems[currentProblem];
     
+    // 3번 문제에서 지원자 이름 체크
+    if (problem.id === 3) {
+        const userName = userNameInput.value.trim();
+        if (!userName) {
+            alert('지원자 이름을 작성해 주세요.');
+            userNameInput.focus();
+            return;
+        }
+    }
+    
     try {
         // 코드 실행
         eval(code);
@@ -435,7 +444,7 @@ function submitCode() {
         if (problem.id === 1) {
             // 1번 문제 테스트
             if (typeof changeToCase === 'function') {
-                const userResult = changeToCase();
+                const userResult = changeToCase('dKbMc');
                 const expectedResult = problem.solution('dKbMc');
                 
                 if (userResult === expectedResult) {
@@ -464,7 +473,7 @@ function submitCode() {
                                        userData.every(item => item.id && item.title && Object.keys(item).length === 2);
                         
                         if (isValid && userData.length === solutionData.length) {
-                            resultOutput.textContent = `✅ 제출 성공!\n결과: ${userData.length}개의 데이터\n${JSON.stringify(userData.slice(0, 2), null, 2)}...`;
+                            resultOutput.textContent = `✅ 제출 성공!\n결과:\n${JSON.stringify(userData, null, 2)}`;
                             resultOutput.style.color = '#28a745';
                         } else {
                             resultOutput.textContent = `❌ 테스트 실패`;
@@ -502,7 +511,7 @@ function submitCode() {
                         JSON.stringify(userResult) === JSON.stringify(expectedResult);
                     
                     if (isValidContent) {
-                        resultOutput.textContent = `✅ 제출 성공!\n결과:\n${JSON.stringify(userResult[0], null, 2)}...`;
+                        resultOutput.textContent = `✅ 제출 성공!\n결과:\n${JSON.stringify(userResult, null, 2)}`;
                         resultOutput.style.color = '#28a745';
                     } else {
                         resultOutput.textContent = `❌ 테스트 실패\n기대값과 다른 결과입니다.`;
