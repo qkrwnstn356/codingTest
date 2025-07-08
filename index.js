@@ -628,7 +628,14 @@ codeInput.addEventListener('keydown', (e) => {
         
         codeInput.value = codeInput.value.substring(0, start) + '    ' + codeInput.value.substring(end);
         codeInput.selectionStart = codeInput.selectionEnd = start + 4;
-        }
+    }
+    
+    // 붙여넣기 불가 맥도 불가 
+    if (e.ctrlKey && e.key === 'v' || e.metaKey && e.key === 'v') {
+        e.preventDefault();
+        alert('붙여넣기는 불가합니다.');
+        return;
+    }
 });
 
 
