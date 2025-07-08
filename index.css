@@ -28,10 +28,50 @@ body {
     border-bottom: 1px solid #404040;
 }
 
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+}
+
 .header h1 {
     font-size: 24px;
     font-weight: 600;
     color: #ffffff;
+    margin: 0;
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.user-info label {
+    font-size: 14px;
+    color: #cccccc;
+    font-weight: 500;
+}
+
+.user-info input {
+    background-color: #404040;
+    border: 1px solid #555555;
+    border-radius: 4px;
+    padding: 6px 12px;
+    color: #ffffff;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s, background-color 0.2s;
+    min-width: 150px;
+}
+
+.user-info input:focus {
+    border-color: #0066cc;
+    background-color: #4a4a4a;
+}
+
+.user-info input::placeholder {
+    color: #888888;
 }
 
 .header-controls {

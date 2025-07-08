@@ -12,18 +12,10 @@ const problems = [
     // 이 곳에 구현해주세요.
     
     return answer;
-}
-
-// 테스트 실행
-console.log(changeToCase());`,
+}`,
         solution: function(str) {
             return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
-        },
-        testCases: [
-            { input: 'dKbMc', expected: 'Dkbmc' },
-            { input: 'HELLO', expected: 'Hello' },
-            { input: 'world', expected: 'World' }
-        ]
+        }
     },
     {
         id: 2,
@@ -36,15 +28,13 @@ console.log(changeToCase());`,
   { id: 32, title: 'doloremque illum aliquid sunt' },
   ...
 ]`,
-        initialCode: `const url = 'https://jsonplaceholder.typicode.com/posts';
+        initialCode: `// 제공된 API URL
+const url = 'https://jsonplaceholder.typicode.com/posts';
 
 async function fetchUserIdData(url) {
     // 이 곳에 구현해주세요.
     
-}
-
-// 테스트 실행
-fetchUserIdData(url).then(result => console.log(result));`,
+}`,
         solution: async function(url) {
             const response = await fetch(url);
             const data = await response.json();
@@ -75,7 +65,8 @@ fetchUserIdData(url).then(result => console.log(result));`,
         ...
     }
 ]`,
-        initialCode: `const dataList = [
+                 initialCode: `// 제공된 데이터
+const dataList = [
     [
       { "field": "vtOrderNo", "value": "test2" },
       { "field": "vtDeliveryDate", "value": "07-07-2025" },
@@ -107,10 +98,7 @@ fetchUserIdData(url).then(result => console.log(result));`,
 function formatingNewList(dataList) {
     // 이 곳에 구현해주세요.
     
-}
-
-// 테스트 실행
-console.log(formatingNewList(dataList));`,
+}`,
         solution: function(dataList) {
             return dataList.map(arr => {
                 return arr.reduce((obj, item) => {
@@ -128,6 +116,36 @@ let currentProblem = 0;
 // 사용자 작업 내용 저장소
 let userProgress = {};
 
+// 3번 문제용 샘플 데이터 (전역으로 정의하여 재사용)
+const sampleDataList = [
+    [
+      { "field": "vtOrderNo", "value": "test2" },
+      { "field": "vtDeliveryDate", "value": "07-07-2025" },
+      { "field": "supplierSoldTo", "value": 3400251 },
+      { "field": "supplierShipTo", "value": 4400144 },
+      { "field": "supplierPoNo", "value": "PoNumber-111" },
+      { "field": "buyerSoldTo", "value": 3400143 },
+      { "field": "branch", "value": "Canada" },
+      { "field": "buyerShipTo", "value": 4400315 },
+      { "field": "buyerPoNo", "value": "Order-Po_nuber1" },
+      { "field": "material", "value": "10140NXC" },
+      { "field": "qty", "value": -200 }
+    ],
+    [
+      { "field": "vtOrderNo", "value": "test2" },
+      { "field": "vtDeliveryDate", "value": "07-07-2025" },
+      { "field": "supplierSoldTo", "value": 3400251 },
+      { "field": "supplierShipTo", "value": 4400144 },
+      { "field": "supplierPoNo", "value": "PoNumber-111" },
+      { "field": "buyerSoldTo", "value": 3400143 },
+      { "field": "branch", "value": "Canada" },
+      { "field": "buyerShipTo", "value": 4425146 },
+      { "field": "buyerPoNo", "value": "Order-Po_nuber5" },
+      { "field": "material", "value": "17733NXK" },
+      { "field": "qty", "value": 1 }
+    ]
+];
+
 // DOM 요소들
 const problemTitle = document.getElementById('problemTitle');
 const problemDesc = document.getElementById('problemDesc');
@@ -141,37 +159,102 @@ const nextBtn = document.getElementById('nextBtn');
 const runBtn = document.getElementById('runBtn');
 const submitBtn = document.getElementById('submitBtn');
 const resetBtn = document.getElementById('resetBtn');
+const userNameInput = document.getElementById('userName');
+
+// 기본값으로 초기화
+function initializeDefaultProgress() {
+    userProgress = {};
+    problems.forEach((problem, index) => {
+        userProgress[index] = {
+            code: problem.initialCode,
+            result: "실행 결과가 여기에 표시됩니다.",
+            resultColor: '#cccccc'
+        };
+    });
+}
 
 // localStorage에서 사용자 진행상황 불러오기
 function loadUserProgress() {
+    // 새로고침 감지 및 초기화 처리
+    const isRefresh = sessionStorage.getItem('isRefresh') || 
+                     (performance.navigation && performance.navigation.type === 1) ||
+                     (performance.getEntriesByType && performance.getEntriesByType('navigation')[0]?.type === 'reload');
+    
+    if (isRefresh) {
+        // 새로고침인 경우 localStorage 완전 삭제 후 디폴트 값으로 초기화
+        localStorage.removeItem('dkbmc_coding_test_progress');
+        localStorage.removeItem('dkbmc_user_name');
+        sessionStorage.removeItem('isRefresh');
+        
+        // 디폴트 값으로 초기화
+        initializeDefaultProgress();
+        userNameInput.value = '';
+        
+        // 사용자에게 알림
+        setTimeout(() => {
+            alert('새로고침으로 인해 모든 작업 내용이 초기화되었습니다.');
+        }, 100);
+        
+        return; // 조기 종료
+    }
+    
+    // 일반적인 로딩 처리
     const saved = localStorage.getItem('dkbmc_coding_test_progress');
+    const savedUserName = localStorage.getItem('dkbmc_user_name');
+    
     if (saved) {
         userProgress = JSON.parse(saved);
     } else {
-        // 초기화
-        userProgress = {};
-        problems.forEach((problem, index) => {
-            userProgress[index] = {
-                code: problem.initialCode,
-                result: "실행 결과가 여기에 표시됩니다.",
-                resultColor: '#cccccc'
-            };
-        });
+        initializeDefaultProgress();
+    }
+    
+    // 사용자 이름 복원
+    if (savedUserName) {
+        userNameInput.value = savedUserName;
     }
 }
 
 // localStorage에 사용자 진행상황 저장
 function saveUserProgress() {
     localStorage.setItem('dkbmc_coding_test_progress', JSON.stringify(userProgress));
+    localStorage.setItem('dkbmc_user_name', userNameInput.value);
 }
 
 // 진행상황 초기화 (선택사항 - 필요시 사용)
 function resetProgress() {
     if (confirm('모든 작업 내용이 초기화됩니다. 계속하시겠습니까?')) {
+        // localStorage 완전 삭제
         localStorage.removeItem('dkbmc_coding_test_progress');
-        loadUserProgress();
+        localStorage.removeItem('dkbmc_user_name');
+        
+        // 디폴트 값으로 초기화
+        initializeDefaultProgress();
+        userNameInput.value = '';
+        
+        // 화면 업데이트 (첫 번째 문제로 이동)
+        currentProblem = 0;
         renderProblem(currentProblem);
+        
+        // localStorage에 디폴트 값 저장
+        saveUserProgress();
     }
+}
+
+// 수동으로 모든 데이터를 디폴트 값으로 강제 초기화
+function forceResetToDefault() {
+    // localStorage 완전 삭제
+    localStorage.removeItem('dkbmc_coding_test_progress');
+    localStorage.removeItem('dkbmc_user_name');
+    
+    // 디폴트 값으로 초기화
+    initializeDefaultProgress();
+    userNameInput.value = '';
+    
+    // 첫 번째 문제로 이동
+    currentProblem = 0;
+    renderProblem(currentProblem);
+    
+    console.log('모든 데이터가 디폴트 값으로 초기화되었습니다.');
 }
 
 // 현재 작업 내용 저장
@@ -182,6 +265,54 @@ function saveCurrentWork() {
         resultColor: resultOutput.style.color || '#cccccc'
     };
     saveUserProgress();
+}
+
+// Syntax Highlighting 함수
+function highlightCode(code) {
+    if (!code) return '';
+    
+    // 이스케이프 HTML
+    code = code.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    
+    // JavaScript 키워드들
+    const keywords = ['function', 'const', 'let', 'var', 'if', 'else', 'for', 'while', 'do', 'return', 'try', 'catch', 'throw', 'new', 'class', 'async', 'await', 'import', 'export', 'default'];
+    
+    // 1. 문자열 하이라이팅 (따옴표 안의 내용)
+    code = code.replace(/(["'`])((?:\\.|(?!\1)[^\\])*?)\1/g, '<span class="string">$1$2$1</span>');
+    
+    // 2. 주석 하이라이팅
+    code = code.replace(/\/\/.*$/gm, '<span class="comment">$&</span>');
+    code = code.replace(/\/\*[\s\S]*?\*\//g, '<span class="comment">$&</span>');
+    
+    // 3. 숫자 하이라이팅
+    code = code.replace(/\b\d+(\.\d+)?\b/g, '<span class="number">$&</span>');
+    
+    // 4. 키워드 하이라이팅 (문자열이나 주석 안에 있지 않은 것만)
+    keywords.forEach(keyword => {
+        const regex = new RegExp(`\\b${keyword}\\b(?![^<]*>)(?![^<]*<\/span>)`, 'g');
+        code = code.replace(regex, `<span class="keyword">${keyword}</span>`);
+    });
+    
+    // 5. 함수명 하이라이팅 (function 다음이나 = 앞의 식별자)
+    code = code.replace(/(?:function\s+)(\w+)|(\w+)(?=\s*=\s*(?:function|async))/g, (match, p1, p2) => {
+        if (p1) return `function <span class="function">${p1}</span>`;
+        if (p2) return `<span class="function">${p2}</span>`;
+        return match;
+    });
+    
+    // 6. 객체 프로퍼티 하이라이팅
+    code = code.replace(/(\w+)(?=\s*:)/g, '<span class="property">$1</span>');
+    
+    // 7. 변수명 하이라이팅 (간단한 경우만)
+    code = code.replace(/(?:let|const|var)\s+(\w+)/g, (match, varName) => {
+        return match.replace(varName, `<span class="variable">${varName}</span>`);
+    });
+    
+    // 8. 연산자와 괄호 하이라이팅
+    code = code.replace(/[+\-*/%=<>!&|]+/g, '<span class="operator">$&</span>');
+    code = code.replace(/[{}[\]()]/g, '<span class="bracket">$&</span>');
+    
+    return code;
 }
 
 // 문제 렌더링
@@ -204,6 +335,7 @@ function renderProblem(index) {
         resultOutput.style.color = '#cccccc';
     }
     
+    
     // 문제 카운터 업데이트
     problemCounter.textContent = `${index + 1} / ${problems.length}`;
     
@@ -215,34 +347,71 @@ function renderProblem(index) {
 // 코드 실행
 function runCode() {
     const code = codeInput.value;
+    const problem = problems[currentProblem];
     
     try {
-        // 콘솔 로그 캡처
-        const originalConsoleLog = console.log;
-        const logs = [];
-        
-        console.log = function(...args) {
-            logs.push(args.map(arg => {
-                if (typeof arg === 'object') {
-                    return JSON.stringify(arg, null, 2);
-                }
-                return String(arg);
-            }).join(' '));
-        };
-        
         // 코드 실행
         eval(code);
         
-        // 콘솔 복원
-        console.log = originalConsoleLog;
+        let result;
+        let functionName;
+        
+        // 각 문제별 함수 실행
+        if (problem.id === 1) {
+            functionName = 'changeToCase';
+            if (typeof changeToCase === 'function') {
+                result = changeToCase();
+            } else {
+                throw new Error(`${functionName} 함수가 정의되지 않았습니다.`);
+            }
+        } else if (problem.id === 2) {
+            functionName = 'fetchUserIdData';
+            if (typeof fetchUserIdData === 'function') {
+                const url = 'https://jsonplaceholder.typicode.com/posts';
+                result = fetchUserIdData(url);
+                
+                // Promise인 경우 처리
+                if (result instanceof Promise) {
+                    result.then(data => {
+                        resultOutput.textContent = JSON.stringify(data, null, 2);
+                        resultOutput.style.color = '#cccccc';
+                        saveCurrentWork();
+                    }).catch(error => {
+                        resultOutput.textContent = `비동기 에러: ${error.message}`;
+                        resultOutput.style.color = '#ff6b6b';
+                        saveCurrentWork();
+                    });
+                    
+                    resultOutput.textContent = "비동기 함수 실행 중...";
+                    resultOutput.style.color = '#ffeb3b';
+                    saveCurrentWork();
+                    return;
+                }
+            } else {
+                throw new Error(`${functionName} 함수가 정의되지 않았습니다.`);
+            }
+        } else if (problem.id === 3) {
+            functionName = 'formatingNewList';
+            if (typeof formatingNewList === 'function') {
+                // dataList가 없으면 전역 샘플 데이터 사용
+                const testData = (typeof dataList !== 'undefined') ? dataList : sampleDataList;
+                result = formatingNewList(testData);
+            } else {
+                throw new Error(`${functionName} 함수가 정의되지 않았습니다.`);
+            }
+        }
         
         // 결과 표시
-        if (logs.length > 0) {
-            resultOutput.textContent = logs.join('\n');
+        if (result !== undefined) {
+            if (typeof result === 'object') {
+                resultOutput.textContent = JSON.stringify(result, null, 2);
+            } else {
+                resultOutput.textContent = String(result);
+            }
             resultOutput.style.color = '#cccccc';
         } else {
-            resultOutput.textContent = "실행 완료 (출력 없음)";
-            resultOutput.style.color = '#cccccc';
+            resultOutput.textContent = "함수가 undefined를 반환했습니다.";
+            resultOutput.style.color = '#ff9800';
         }
         
     } catch (error) {
@@ -257,21 +426,23 @@ function runCode() {
 // 제출
 function submitCode() {
     const code = codeInput.value;
+    const problem = problems[currentProblem];
     
     try {
-        // 현재 문제에 따라 테스트
-        const problem = problems[currentProblem];
+        // 코드 실행
+        eval(code);
         
         if (problem.id === 1) {
             // 1번 문제 테스트
-            eval(code);
             if (typeof changeToCase === 'function') {
-                const result = changeToCase();
-                if (result === 'Dkbmc') {
-                    resultOutput.textContent = "✅ 제출 성공!\n결과: " + result;
+                const userResult = changeToCase();
+                const expectedResult = problem.solution('dKbMc');
+                
+                if (userResult === expectedResult) {
+                    resultOutput.textContent = `✅ 제출 성공!\n결과: ${userResult}`;
                     resultOutput.style.color = '#28a745';
                 } else {
-                    resultOutput.textContent = "❌ 테스트 실패\n예상: 'Dkbmc'\n실제: " + result;
+                    resultOutput.textContent = `❌ 테스트 실패`;
                     resultOutput.style.color = '#ff6b6b';
                 }
             } else {
@@ -280,50 +451,65 @@ function submitCode() {
             }
         } else if (problem.id === 2) {
             // 2번 문제 테스트
-            eval(code);
             if (typeof fetchUserIdData === 'function') {
-                fetchUserIdData('https://jsonplaceholder.typicode.com/posts')
-                    .then(result => {
-                        if (Array.isArray(result) && result.length > 0 && result[0].id && result[0].title) {
-                            const isValid = result.every(item => item.id && item.title && Object.keys(item).length === 2);
-                            if (isValid) {
-                                resultOutput.textContent = "✅ 제출 성공!\n결과: " + JSON.stringify(result.slice(0, 2), null, 2) + "\n...";
-                                resultOutput.style.color = '#28a745';
-                            } else {
-                                resultOutput.textContent = "❌ 반환 형식이 올바르지 않습니다.";
-                                resultOutput.style.color = '#ff6b6b';
-                            }
+                const url = 'https://jsonplaceholder.typicode.com/posts';
+                const userResult = fetchUserIdData(url);
+                
+                if (userResult instanceof Promise) {
+                    resultOutput.textContent = "제출 검증 중...";
+                    resultOutput.style.color = '#ffeb3b';
+                    
+                    Promise.all([userResult, problem.solution(url)]).then(([userData, solutionData]) => {
+                        const isValid = Array.isArray(userData) && userData.length > 0 && 
+                                       userData.every(item => item.id && item.title && Object.keys(item).length === 2);
+                        
+                        if (isValid && userData.length === solutionData.length) {
+                            resultOutput.textContent = `✅ 제출 성공!\n결과: ${userData.length}개의 데이터\n${JSON.stringify(userData.slice(0, 2), null, 2)}...`;
+                            resultOutput.style.color = '#28a745';
                         } else {
-                            resultOutput.textContent = "❌ 반환 값이 올바르지 않습니다.";
+                            resultOutput.textContent = `❌ 테스트 실패`;
                             resultOutput.style.color = '#ff6b6b';
                         }
-                    })
-                    .catch(error => {
+                        saveCurrentWork();
+                    }).catch(error => {
                         resultOutput.textContent = "❌ 에러: " + error.message;
                         resultOutput.style.color = '#ff6b6b';
+                        saveCurrentWork();
                     });
+                    
+                    saveCurrentWork();
+                    return;
+                } else {
+                    resultOutput.textContent = "❌ fetchUserIdData 함수는 Promise를 반환해야 합니다.";
+                    resultOutput.style.color = '#ff6b6b';
+                }
             } else {
                 resultOutput.textContent = "❌ fetchUserIdData 함수가 정의되지 않았습니다.";
                 resultOutput.style.color = '#ff6b6b';
             }
         } else if (problem.id === 3) {
             // 3번 문제 테스트
-            eval(code);
             if (typeof formatingNewList === 'function') {
-                const result = formatingNewList(dataList);
-                if (Array.isArray(result) && result.length === 2) {
-                    const isValid = result.every(obj => 
-                        obj.vtOrderNo && obj.vtDeliveryDate && obj.supplierSoldTo && obj.material
-                    );
-                    if (isValid) {
-                        resultOutput.textContent = "✅ 제출 성공!\n결과: " + JSON.stringify(result[0], null, 2);
+                try {
+                    // 사용자 함수 실행 - dataList가 없으면 전역 샘플 데이터 사용
+                    const testData = (typeof dataList !== 'undefined') ? dataList : sampleDataList;
+                    const userResult = formatingNewList(testData);
+                    const expectedResult = problem.solution(testData); // 같은 testData 사용
+                    
+                    // 결과 구조와 내용을 정확히 비교
+                    const isValidStructure = Array.isArray(userResult) && userResult.length === expectedResult.length;
+                    const isValidContent = isValidStructure && 
+                        JSON.stringify(userResult) === JSON.stringify(expectedResult);
+                    
+                    if (isValidContent) {
+                        resultOutput.textContent = `✅ 제출 성공!\n결과:\n${JSON.stringify(userResult[0], null, 2)}...`;
                         resultOutput.style.color = '#28a745';
                     } else {
-                        resultOutput.textContent = "❌ 반환 형식이 올바르지 않습니다.";
+                        resultOutput.textContent = `❌ 테스트 실패\n기대값과 다른 결과입니다.`;
                         resultOutput.style.color = '#ff6b6b';
                     }
-                } else {
-                    resultOutput.textContent = "❌ 반환 값이 올바르지 않습니다.";
+                } catch (error) {
+                    resultOutput.textContent = `❌ 함수 실행 에러: ${error.message}`;
                     resultOutput.style.color = '#ff6b6b';
                 }
             } else {
@@ -332,14 +518,14 @@ function submitCode() {
             }
         }
         
-             } catch (error) {
-         resultOutput.textContent = `❌ 에러: ${error.message}`;
-         resultOutput.style.color = '#ff6b6b';
-     }
-     
-     // 제출 결과 저장
-     saveCurrentWork();
- }
+    } catch (error) {
+        resultOutput.textContent = `❌ 에러: ${error.message}`;
+        resultOutput.style.color = '#ff6b6b';
+    }
+    
+    // 제출 결과 저장
+    saveCurrentWork();
+}
 
 // 이벤트 리스너
 prevBtn.addEventListener('click', () => {
@@ -366,26 +552,66 @@ runBtn.addEventListener('click', runCode);
 submitBtn.addEventListener('click', submitCode);
 resetBtn.addEventListener('click', resetProgress);
 
-// 코드 입력 시 자동 저장 (실시간 저장)
+// 코드 입력 시 자동 저장
 codeInput.addEventListener('input', () => {
-    // 디바운싱으로 성능 최적화
+    // 디바운싱으로 성능 최적화하여 자동 저장
     clearTimeout(codeInput.saveTimeout);
     codeInput.saveTimeout = setTimeout(saveCurrentWork, 1000);
 });
 
-// 페이지 떠날 때 저장
-window.addEventListener('beforeunload', () => {
+// 사용자 이름 입력 시 자동 저장
+userNameInput.addEventListener('input', () => {
+    // 디바운싱으로 성능 최적화
+    clearTimeout(userNameInput.saveTimeout);
+    userNameInput.saveTimeout = setTimeout(() => {
+        localStorage.setItem('dkbmc_user_name', userNameInput.value);
+    }, 500);
+});
+
+// 페이지 로드 완료 표시
+window.addEventListener('load', () => {
+    sessionStorage.setItem('pageLoaded', 'true');
+});
+
+// 새로고침 감지를 위한 플래그 설정
+window.addEventListener('beforeunload', (e) => {
+    sessionStorage.setItem('isRefresh', 'true');
+    
+    // 현재 작업 저장 (새로고침 취소 시를 위해)
     saveCurrentWork();
+    
+    // 새로고침 확인 메시지 (브라우저 기본 메시지 사용)
+    const confirmMessage = '작업 내용이 저장되지 않을 수 있습니다. 정말 페이지를 떠나시겠습니까?';
+    
+    // 브라우저 기본 확인 대화상자 표시
+    e.preventDefault();
+    e.returnValue = confirmMessage;
+    
+    return confirmMessage;
+});
+
+// 새로고침 취소 시 플래그 제거
+window.addEventListener('focus', () => {
+    // 사용자가 페이지로 돌아온 경우 (새로고침 취소)
+    if (sessionStorage.getItem('isRefresh')) {
+        sessionStorage.removeItem('isRefresh');
+    }
 });
 
 // 초기 렌더링
 document.addEventListener('DOMContentLoaded', () => {
     loadUserProgress();
     renderProblem(currentProblem);
+    // 초기 하이라이팅 적용
+    updateHighlighting();
 });
 
-// 코드 에디터 개선 (탭 키 지원)
+// 전역 함수로 노출 (콘솔에서 사용 가능)
+window.forceResetToDefault = forceResetToDefault;
+
+// 코드 에디터 개선 (탭 키 지원 및 붙여넣기 감지)
 codeInput.addEventListener('keydown', (e) => {
+    // Tab 키 지원
     if (e.key === 'Tab') {
         e.preventDefault();
         const start = codeInput.selectionStart;
@@ -393,8 +619,9 @@ codeInput.addEventListener('keydown', (e) => {
         
         codeInput.value = codeInput.value.substring(0, start) + '    ' + codeInput.value.substring(end);
         codeInput.selectionStart = codeInput.selectionEnd = start + 4;
-    }
+        }
 });
+
 
 
  
