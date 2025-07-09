@@ -80,6 +80,57 @@ body {
     gap: 24px;
 }
 
+.start-test-btn {
+    background-color: #28a745;
+    color: #ffffff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    transition: background-color 0.2s;
+}
+
+.start-test-btn:hover {
+    background-color: #218838;
+}
+
+.start-test-btn:disabled {
+    background-color: #6c757d;
+    cursor: not-allowed;
+}
+
+.timer-display {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background-color: #2d2d2d;
+    padding: 8px 16px;
+    border-radius: 4px;
+    border: 2px solid #ffc107;
+}
+
+.timer-display span:first-child {
+    color: #cccccc;
+    font-size: 14px;
+}
+
+#timerText {
+    color: #ffc107;
+    font-size: 18px;
+    font-weight: 700;
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+}
+
+.timer-warning {
+    border-color: #dc3545 !important;
+}
+
+.timer-warning #timerText {
+    color: #dc3545 !important;
+}
+
 .reset-btn {
     background-color: #dc3545;
     color: #ffffff;
@@ -378,4 +429,28 @@ body {
 
 .final-submit-btn:hover {
     background-color: #c0392b;
+}
+
+/* 비활성화된 버튼 스타일 */
+.action-btn:disabled {
+    background-color: #6c757d !important;
+    color: #cccccc !important;
+    cursor: not-allowed !important;
+    opacity: 0.6;
+}
+
+/* 비활성화된 코드 입력 스타일 */
+#codeInput:disabled {
+    background-color: #2d2d2d !important;
+    color: #666666 !important;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+/* 비활성화된 사용자 이름 입력 스타일 */
+.user-info input:disabled {
+    background-color: #2d2d2d !important;
+    color: #666666 !important;
+    cursor: not-allowed;
+    opacity: 0.6;
 }

@@ -113,6 +113,11 @@ let currentProblem = 0;
 // 사용자 작업 내용 저장소
 let userProgress = {};
 
+// 타이머 관련 변수
+let testTimer = null;
+let timeLeft = 3600; // 1시간 (60분 * 60초)
+let testStarted = false;
+
 // 3번 문제용 샘플 데이터 (전역으로 정의하여 재사용)
 const sampleDataList = [
     [
@@ -158,6 +163,9 @@ const runBtn = document.getElementById('runBtn');
 const submitBtn = document.getElementById('submitBtn');
 const resetBtn = document.getElementById('resetBtn');
 const finalSubmitBtn = document.getElementById('finalSubmitBtn');
+const startTestBtn = document.getElementById('startTestBtn');
+const timerDisplay = document.getElementById('timerDisplay');
+const timerText = document.getElementById('timerText');
 const userNameInput = document.getElementById('userName');
 
 // 기본값으로 초기화
@@ -342,10 +350,35 @@ function renderProblem(index) {
     // 네비게이션 버튼 상태 업데이트
     prevBtn.disabled = index === 0;
     nextBtn.disabled = index === problems.length - 1;
+    
+    // 시험 시작 상태에 따른 버튼 활성화/비활성화
+    updateButtonStates();
+}
+
+// 버튼 상태 업데이트
+function updateButtonStates() {
+    const isTestStarted = testStarted;
+    
+    // 시험이 시작되지 않았으면 실행/제출 버튼 비활성화
+    runBtn.disabled = !isTestStarted;
+    submitBtn.disabled = !isTestStarted;
+    finalSubmitBtn.disabled = !isTestStarted;
+    
+    // 코드 입력 비활성화
+    codeInput.disabled = !isTestStarted;
+    
+    // 네비게이션 버튼 비활성화
+    prevBtn.disabled = !isTestStarted || currentProblem === 0;
+    nextBtn.disabled = !isTestStarted || currentProblem === problems.length - 1;
 }
 
 // 코드 실행
 function runCode() {
+    if (!testStarted) {
+        alert('시험 시작 버튼을 눌러주세요.');
+        return;
+    }
+    
     const code = codeInput.value;
     const problem = problems[currentProblem];
     
@@ -425,6 +458,11 @@ function runCode() {
 
 // 제출
 function submitCode() {
+    if (!testStarted) {
+        alert('시험을 시작해 주세요.');
+        return;
+    }
+    
     const code = codeInput.value;
     const problem = problems[currentProblem];
     
@@ -537,6 +575,11 @@ function finalSubmit() {
         return;
     }
     
+    if (!testStarted) {
+        alert('시험을 시작해 주세요.');
+        return;
+    }
+    
     if (currentProblem < problems.length - 1) {
         alert('모든 문제의 제출 버튼을 눌러주세요.');
         return;
@@ -549,6 +592,91 @@ function finalSubmit() {
         // 화면 전환
         showCompletionScreen();
     }
+}
+
+// 시험 시작 기능
+function startTest() {
+    const userName = userNameInput.value.trim();
+    
+    if (!userName) {
+        alert('지원자 이름을 작성해 주세요.');
+        userNameInput.focus();
+        return;
+    }
+    
+    if (confirm('시험을 시작하시겠습니까? 시험 시간은 1시간입니다.')) {
+        testStarted = true;
+        
+        // 시험 시작 버튼 숨기기 및 비활성화
+        startTestBtn.style.display = 'none';
+        
+        // 타이머 표시
+        timerDisplay.style.display = 'flex';
+        
+        // 사용자 이름 입력 비활성화
+        userNameInput.disabled = true;
+        
+        // 타이머 시작
+        startTimer();
+        
+        // 버튼 상태 업데이트
+        updateButtonStates();
+        
+        // 현재 작업 내용 저장
+        saveCurrentWork();
+    }
+}
+
+// 타이머 시작 함수
+function startTimer() {
+    testTimer = setInterval(() => {
+        timeLeft--;
+        updateTimerDisplay();
+        
+        // 마지막 5분에는 경고 색상으로 표시
+        if (timeLeft <= 300) { // 5분 = 300초
+            timerDisplay.classList.add('timer-warning');
+        }
+        
+        // 시간이 끝났을 때
+        if (timeLeft <= 0) {
+            clearInterval(testTimer);
+            handleTimeUp();
+        }
+    }, 1000);
+}
+
+// 타이머 표시 업데이트
+function updateTimerDisplay() {
+    const minutes = Math.floor(timeLeft / 60);
+    const seconds = timeLeft % 60;
+    timerText.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+}
+
+// 시간 종료 처리
+function handleTimeUp() {
+    alert('시간이 지났습니다. 자동으로 제출됩니다.');
+    
+    // 모든 문제 자동 제출
+    autoSubmitAll();
+}
+
+// 모든 문제 자동 제출
+function autoSubmitAll() {
+    // 현재 작업 내용 저장
+    saveCurrentWork();
+    
+    // 최종 제출 처리
+    finalSubmitAfterTimeout();
+}
+
+// 시간 초과 후 최종 제출
+function finalSubmitAfterTimeout() {
+    // 현재 작업 내용 저장
+    saveCurrentWork();
+    
+    // 화면 전환
+    showCompletionScreen();
 }
 
 // 완료 화면 표시
@@ -566,6 +694,11 @@ function showCompletionScreen() {
     // 완료 화면 표시
     completionScreen.style.display = 'flex';
     
+    // 타이머 정지
+    if (testTimer) {
+        clearInterval(testTimer);
+    }
+    
     // 페이지 새로고침 방지
     window.addEventListener('beforeunload', (e) => {
         e.preventDefault();
@@ -575,6 +708,11 @@ function showCompletionScreen() {
 
 // 이벤트 리스너
 prevBtn.addEventListener('click', () => {
+    if (!testStarted) {
+        alert('시험을 시작해 주세요.');
+        return;
+    }
+    
     // 현재 작업 내용 저장
     saveCurrentWork();
     
@@ -585,6 +723,11 @@ prevBtn.addEventListener('click', () => {
 });
 
 nextBtn.addEventListener('click', () => {
+    if (!testStarted) {
+        alert('시험을 시작해 주세요.');
+        return;
+    }
+    
     // 현재 작업 내용 저장
     saveCurrentWork();
     
@@ -597,10 +740,13 @@ nextBtn.addEventListener('click', () => {
 runBtn.addEventListener('click', runCode);
 submitBtn.addEventListener('click', submitCode);
 finalSubmitBtn.addEventListener('click', finalSubmit);
+startTestBtn.addEventListener('click', startTest);
 resetBtn.addEventListener('click', resetProgress);
 
 // 코드 입력 시 자동 저장
 codeInput.addEventListener('input', () => {
+    if (!testStarted) return;
+    
     // 디바운싱으로 성능 최적화하여 자동 저장
     clearTimeout(codeInput.saveTimeout);
     codeInput.saveTimeout = setTimeout(saveCurrentWork, 1000);
