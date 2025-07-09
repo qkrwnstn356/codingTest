@@ -227,22 +227,27 @@ function saveUserProgress() {
     localStorage.setItem('dkbmc_user_name', userNameInput.value);
 }
 
-// 진행상황 초기화 (선택사항 - 필요시 사용)
+// 현재 문제만 초기화
 function resetProgress() {
-    if (confirm('모든 작업 내용이 초기화됩니다. 계속하시겠습니까?')) {
-        // localStorage 완전 삭제
-        localStorage.removeItem('dkbmc_coding_test_progress');
-        localStorage.removeItem('dkbmc_user_name');
+    if (!testStarted) {
+        alert('시험을 시작해 주세요.');
+        return;
+    }
+    
+    if (confirm('현재 문제의 코드구현과 실행결과가 초기화됩니다. 계속하시겠습니까?')) {
+        const problem = problems[currentProblem];
         
-        // 디폴트 값으로 초기화
-        initializeDefaultProgress();
-        userNameInput.value = '';
+        // 현재 문제만 초기화
+        userProgress[currentProblem] = {
+            code: problem.initialCode,
+            result: "실행 결과가 여기에 표시됩니다.",
+            resultColor: '#cccccc'
+        };
         
-        // 화면 업데이트 (첫 번째 문제로 이동)
-        currentProblem = 0;
+        // 화면 업데이트
         renderProblem(currentProblem);
         
-        // localStorage에 디폴트 값 저장
+        // localStorage에 저장
         saveUserProgress();
     }
 }
@@ -363,6 +368,7 @@ function updateButtonStates() {
     runBtn.disabled = !isTestStarted;
     submitBtn.disabled = !isTestStarted;
     finalSubmitBtn.disabled = !isTestStarted;
+    resetBtn.disabled = !isTestStarted;
     
     // 코드 입력 비활성화
     codeInput.disabled = !isTestStarted;
@@ -606,6 +612,8 @@ function startTest() {
     }
     
     if (confirm('시험을 시작하시겠습니까? 시험 시간은 1시간입니다.')) {
+        
+        // 시험 시작 상태 설정
         testStarted = true;
         
         // 시험 시작 버튼 숨기기 및 비활성화
@@ -623,8 +631,9 @@ function startTest() {
         // 버튼 상태 업데이트
         updateButtonStates();
         
-        // 현재 작업 내용 저장
-        saveCurrentWork();
+        // 키보드 새로고침 방지
+        enableRefreshPrevention();
+
     }
 }
 
@@ -654,31 +663,17 @@ function updateTimerDisplay() {
     timerText.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
 }
 
-// 시간 종료 처리
+// 시간 종료 처리 -- 모든 문제 자동 제출
 function handleTimeUp() {
     alert('시간이 지났습니다. 자동으로 제출됩니다.');
     
-    // 모든 문제 자동 제출
-    autoSubmitAll();
-}
-
-// 모든 문제 자동 제출
-function autoSubmitAll() {
     // 현재 작업 내용 저장
     saveCurrentWork();
-    
-    // 최종 제출 처리
-    finalSubmitAfterTimeout();
-}
 
-// 시간 초과 후 최종 제출
-function finalSubmitAfterTimeout() {
-    // 현재 작업 내용 저장
-    saveCurrentWork();
-    
     // 화면 전환
     showCompletionScreen();
 }
+
 
 // 완료 화면 표시
 function showCompletionScreen() {
@@ -686,6 +681,7 @@ function showCompletionScreen() {
     const completionScreen = document.getElementById('completionScreen');
     const completionUserName = document.getElementById('completionUserName');
     
+    testStarted = false;
     // 기존 컨테이너 숨기기
     container.style.display = 'none';
     
@@ -703,7 +699,10 @@ function showCompletionScreen() {
     // 페이지 새로고침 방지
     window.addEventListener('beforeunload', (e) => {
         e.preventDefault();
-        e.returnValue = '';
+    });
+
+    window.addEventListener('keydown', (e) => {
+        e.preventDefault();
     });
 }
 
@@ -763,12 +762,19 @@ userNameInput.addEventListener('input', () => {
 });
 
 // 페이지 로드 완료 표시
-window.addEventListener('load', () => {
-    sessionStorage.setItem('pageLoaded', 'true');
-});
+// window.addEventListener('load', () => {
+//     sessionStorage.setItem('pageLoaded', 'true');
+// });
 
 // 새로고침 감지를 위한 플래그 설정
 window.addEventListener('beforeunload', (e) => {
+    if(testStarted) {
+        // 시험 시작 후에는 완전히 새로고침을 막음
+        e.preventDefault();
+        e.returnValue = '시험 진행 중에는 새로고침을 할 수 없습니다.';
+        return '시험 진행 중에는 새로고침을 할 수 없습니다.';
+    }
+    
     sessionStorage.setItem('isRefresh', 'true');
     
     // 현재 작업 저장 (새로고침 취소 시를 위해)
@@ -779,7 +785,7 @@ window.addEventListener('beforeunload', (e) => {
     
     // 브라우저 기본 확인 대화상자 표시
     e.preventDefault();
-    e.returnValue = confirmMessage;
+    // e.returnValue = confirmMessage;
     
     return confirmMessage;
 });
@@ -791,6 +797,34 @@ window.addEventListener('focus', () => {
         sessionStorage.removeItem('isRefresh');
     }
 });
+
+// 키보드 새로고침 방지 함수
+function enableRefreshPrevention() {
+    document.addEventListener('keydown', (e) => {
+        if (testStarted) {
+            // F5 키 막기
+            if (e.key === 'F5') {
+                e.preventDefault();
+                alert('시험 진행 중에는 새로고침을 할 수 없습니다.');
+                return false;
+            }
+            
+            // Ctrl+R 또는 Cmd+R 막기
+            if ((e.ctrlKey || e.metaKey) && e.key === 'r') {
+                e.preventDefault();
+                alert('시험 진행 중에는 새로고침을 할 수 없습니다.');
+                return false;
+            }
+            
+            // Ctrl+F5 또는 Cmd+Shift+R 막기 (강제 새로고침)
+            if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'F5' || e.key === 'r')) {
+                e.preventDefault();
+                alert('시험 진행 중에는 새로고침을 할 수 없습니다.');
+                return false;
+            }
+        }
+    });
+}
 
 // 초기 렌더링
 document.addEventListener('DOMContentLoaded', () => {
