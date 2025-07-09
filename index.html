@@ -57,6 +57,7 @@
                     <div class="action-buttons">
                         <button id="runBtn" class="action-btn run-btn">실행</button>
                         <button id="submitBtn" class="action-btn submit-btn">제출</button>
+                        <button id="finalSubmitBtn" class="action-btn final-submit-btn">최종제출</button>
                     </div>
                 </div>
                 <div class="code-editor">
@@ -69,6 +70,22 @@
             </div>
         </div>
     </div>
+    
+    <!-- 완료 화면 -->
+    <div id="completionScreen" class="completion-screen" style="display: none;">
+        <div class="completion-content">
+            <h1>DK BMC 코딩 테스트 완료</h1>
+            <div class="completion-message">
+                <p class="user-name" id="completionUserName"></p>
+                <p>테스트 보시느라 수고하셨습니다.</p>
+            </div>
+            <div class="completion-info">
+                <p>제출이 완료되었습니다.</p>
+                <p>결과는 따로 전달드리지 않습니다.</p>
+            </div>
+        </div>
+    </div>
+    
     <script src="index.js"></script>
 </body>
 </html>

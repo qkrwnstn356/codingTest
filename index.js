@@ -157,6 +157,7 @@ const nextBtn = document.getElementById('nextBtn');
 const runBtn = document.getElementById('runBtn');
 const submitBtn = document.getElementById('submitBtn');
 const resetBtn = document.getElementById('resetBtn');
+const finalSubmitBtn = document.getElementById('finalSubmitBtn');
 const userNameInput = document.getElementById('userName');
 
 // 기본값으로 초기화
@@ -427,16 +428,6 @@ function submitCode() {
     const code = codeInput.value;
     const problem = problems[currentProblem];
     
-    // 3번 문제에서 지원자 이름 체크
-    if (problem.id === 3) {
-        const userName = userNameInput.value.trim();
-        if (!userName) {
-            alert('지원자 이름을 작성해 주세요.');
-            userNameInput.focus();
-            return;
-        }
-    }
-    
     try {
         // 코드 실행
         eval(code);
@@ -536,6 +527,52 @@ function submitCode() {
     saveCurrentWork();
 }
 
+// 최종제출
+function finalSubmit() {
+    const userName = userNameInput.value.trim();
+    
+    if (!userName) {
+        alert('지원자 이름을 작성해 주세요.');
+        userNameInput.focus();
+        return;
+    }
+    
+    if (currentProblem < problems.length - 1) {
+        alert('모든 문제의 제출 버튼을 눌러주세요.');
+        return;
+    }
+
+    if (confirm('최종제출 하시겠습니까? 제출 후에는 수정할 수 없습니다.')) {
+        // 현재 작업 내용 저장
+        saveCurrentWork();
+        
+        // 화면 전환
+        showCompletionScreen();
+    }
+}
+
+// 완료 화면 표시
+function showCompletionScreen() {
+    const container = document.querySelector('.container');
+    const completionScreen = document.getElementById('completionScreen');
+    const completionUserName = document.getElementById('completionUserName');
+    
+    // 기존 컨테이너 숨기기
+    container.style.display = 'none';
+    
+    // 사용자 이름 표시
+    completionUserName.textContent = userNameInput.value + '님';
+    
+    // 완료 화면 표시
+    completionScreen.style.display = 'flex';
+    
+    // 페이지 새로고침 방지
+    window.addEventListener('beforeunload', (e) => {
+        e.preventDefault();
+        e.returnValue = '';
+    });
+}
+
 // 이벤트 리스너
 prevBtn.addEventListener('click', () => {
     // 현재 작업 내용 저장
@@ -559,6 +596,7 @@ nextBtn.addEventListener('click', () => {
 
 runBtn.addEventListener('click', runCode);
 submitBtn.addEventListener('click', submitCode);
+finalSubmitBtn.addEventListener('click', finalSubmit);
 resetBtn.addEventListener('click', resetProgress);
 
 // 코드 입력 시 자동 저장
@@ -611,8 +649,6 @@ window.addEventListener('focus', () => {
 document.addEventListener('DOMContentLoaded', () => {
     loadUserProgress();
     renderProblem(currentProblem);
-    // 초기 하이라이팅 적용
-    updateHighlighting();
 });
 
 // 전역 함수로 노출 (콘솔에서 사용 가능)
@@ -631,11 +667,11 @@ codeInput.addEventListener('keydown', (e) => {
     }
     
     // 붙여넣기 불가 맥도 불가 
-    if (e.ctrlKey && e.key === 'v' || e.metaKey && e.key === 'v') {
-        e.preventDefault();
-        alert('붙여넣기는 불가합니다.');
-        return;
-    }
+    // if (e.ctrlKey && e.key === 'v' || e.metaKey && e.key === 'v') {
+    //     e.preventDefault();
+    //     alert('붙여넣기는 불가합니다.');
+    //     return;
+    // }
 });
 
 
