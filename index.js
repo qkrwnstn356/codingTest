@@ -580,10 +580,11 @@ function finalSubmit() {
         return;
     }
     
-    if (currentProblem < problems.length - 1) {
-        alert('모든 문제의 제출 버튼을 눌러주세요.');
-        return;
-    }
+    // 모든 문제 제출 확인 검증 제거
+    // if (currentProblem < problems.length - 1) {
+    //     alert('모든 문제의 제출 버튼을 눌러주세요.');
+    //     return;
+    // }
 
     if (confirm('최종제출 하시겠습니까? 제출 후에는 수정할 수 없습니다.')) {
         // 현재 작업 내용 저장
@@ -811,13 +812,12 @@ codeInput.addEventListener('keydown', (e) => {
         codeInput.value = codeInput.value.substring(0, start) + '    ' + codeInput.value.substring(end);
         codeInput.selectionStart = codeInput.selectionEnd = start + 4;
     }
-    
-    // 붙여넣기 불가 맥도 불가 
-    // if (e.ctrlKey && e.key === 'v' || e.metaKey && e.key === 'v') {
-    //     e.preventDefault();
-    //     alert('붙여넣기는 불가합니다.');
-    //     return;
-    // }
+
+    if (e.ctrlKey && e.key === 'v' || e.metaKey && e.key === 'v') {
+        e.preventDefault();
+        alert('붙여넣기는 불가합니다.');
+        return;
+    }
 });
 
 
